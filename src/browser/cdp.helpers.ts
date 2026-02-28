@@ -5,6 +5,28 @@ import { getChromeExtensionRelayAuthHeaders } from "./extension-relay.js";
 
 export { isLoopbackHost };
 
+/** Call before CDP loopback fetches so they bypass corporate HTTP proxies. */
+export function ensureLoopbackInNoProxy(): void {
+  const needed = ["127.0.0.1", "localhost", "::1", "[::1]"];
+  const keys = (["NO_PROXY", "no_proxy"] as const).filter((k) => process.env[k] != null);
+  // If neither is set, prime no_proxy only when a proxy is active
+  const activeKeys =
+    keys.length > 0
+      ? keys
+      : process.env.HTTP_PROXY || process.env.http_proxy
+        ? (["no_proxy"] as const)
+        : [];
+
+  for (const key of activeKeys) {
+    const current = process.env[key] ?? "";
+    const entries = new Set(current.split(",").map((s) => s.trim().toLowerCase()));
+    const missing = needed.filter((h) => !entries.has(h));
+    if (missing.length > 0) {
+      process.env[key] = current ? `${current},${missing.join(",")}` : missing.join(",");
+    }
+  }
+}
+
 type CdpResponse = {
   id: number;
   result?: unknown;
