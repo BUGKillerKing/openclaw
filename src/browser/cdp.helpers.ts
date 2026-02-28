@@ -5,17 +5,25 @@ import { getChromeExtensionRelayAuthHeaders } from "./extension-relay.js";
 
 export { isLoopbackHost };
 
+/** Proxy env keys that affect http:// requests (Node/undici EnvHttpProxyAgent). */
+const ACTIVE_PROXY_KEYS = [
+  "HTTP_PROXY",
+  "http_proxy",
+  "HTTPS_PROXY",
+  "https_proxy",
+  "ALL_PROXY",
+  "all_proxy",
+] as const;
+
 /** Call before CDP loopback fetches so they bypass corporate HTTP proxies. */
 export function ensureLoopbackInNoProxy(): void {
   const needed = ["127.0.0.1", "localhost", "::1", "[::1]"];
   const keys = (["NO_PROXY", "no_proxy"] as const).filter((k) => process.env[k] != null);
   // If neither is set, prime no_proxy only when a proxy is active
-  const activeKeys =
-    keys.length > 0
-      ? keys
-      : process.env.HTTP_PROXY || process.env.http_proxy
-        ? (["no_proxy"] as const)
-        : [];
+  const hasActiveProxy = ACTIVE_PROXY_KEYS.some(
+    (k) => typeof process.env[k] === "string" && process.env[k]!.trim(),
+  );
+  const activeKeys = keys.length > 0 ? keys : hasActiveProxy ? (["no_proxy"] as const) : [];
 
   for (const key of activeKeys) {
     const current = process.env[key] ?? "";

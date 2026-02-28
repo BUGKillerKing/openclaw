@@ -123,12 +123,12 @@ curl -s http://127.0.0.1:18791/tabs
 
 ### Problem: CDP unreachable behind corporate HTTP proxy
 
-If `http_proxy` / `HTTP_PROXY` is set and `no_proxy` uses CIDR notation
-(e.g. `127.0.0.0/8`), Node.js will route loopback CDP requests through the proxy.
-Chrome starts fine, but OpenClaw cannot reach `http://127.0.0.1:<port>/json/version`.
+If `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY` (or their lowercase variants) is set and
+`no_proxy` uses CIDR notation (e.g. `127.0.0.0/8`), Node.js may route loopback CDP requests
+through the proxy. Chrome starts fine, but OpenClaw cannot reach `http://127.0.0.1:<port>/json/version`.
 
-OpenClaw automatically adds `127.0.0.1`, `localhost`, `::1` to `no_proxy` at startup.
-If issues persist, add them manually:
+OpenClaw automatically adds `127.0.0.1`, `localhost`, `::1` to `no_proxy` when any proxy env
+var is active. If issues persist, add them manually:
 
 ```bash
 export no_proxy="$no_proxy,127.0.0.1,localhost,::1"
