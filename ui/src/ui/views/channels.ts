@@ -94,6 +94,7 @@ const BUILTIN_CHANNEL_IDS: ChannelKey[] = [
   "whatsapp",
   "telegram",
   "discord",
+  "irc",
   "googlechat",
   "slack",
   "signal",
