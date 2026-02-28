@@ -1434,10 +1434,12 @@ function runDeliveryLabel(value: string): string {
       return t("cron.runs.deliveryDelivered");
     case "not-delivered":
       return t("cron.runs.deliveryNotDelivered");
+    case "not-requested":
+      return t("cron.runs.deliveryNotRequested");
     case "unknown":
       return t("cron.runs.deliveryUnknown");
     default:
-      return t("cron.runs.deliveryNotRequested");
+      return t("cron.runs.deliveryUnknown");
   }
 }
 
