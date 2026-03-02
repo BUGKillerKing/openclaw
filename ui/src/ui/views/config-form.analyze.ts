@@ -204,5 +204,22 @@ function normalizeUnion(
     };
   }
 
+  // When a union mixes a single primitive with complex types (e.g. SecretInputSchema:
+  // string | { source: "env"|"file"|"exec", ... }), simplify to the primitive so the
+  // form can render a text input instead of marking the field unsupported.
+  if (remaining.length > 0 && literals.length === 0) {
+    const primitives = remaining.filter(
+      (entry) => entry.type && primitiveTypes.has(String(entry.type)),
+    );
+    if (primitives.length >= 1) {
+      const chosen = primitives[0];
+      const res = normalizeSchemaNode(chosen, path);
+      if (res.schema) {
+        res.schema.nullable = nullable || res.schema.nullable;
+      }
+      return res;
+    }
+  }
+
   return null;
 }
